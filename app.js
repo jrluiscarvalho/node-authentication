@@ -1,32 +1,29 @@
-var bodyParser = require('body-parser');
-var express = require('express');
-var app = express();
+var express = require('express')
+, app = express()
+, bodyParser = require('body-parser')
+, mongoose = require('mongoose')
+, jwt = require('jwt-simple');
 
-app.use(bodyParser.urlencoded({extended:true}));
+var routes = require('./routes/routes')
 
-app.set('view engine', 'jade');
-app.locals.pretty = true;
+var authRequire = require('./service/auth');
 
-app.get('/', function(req, res){
-    res.render('index.jade');
-});
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-app.post('/register', function(req, res){
-    res.json(req.body);
-    res.render('register.jade');
-});
+var port = process.env.PORT || 3000;
+var router = express.Router();
+
+app.use('/api', router);
 
 
-app.get('/login', function(req, res){
-    res.render('login.jade');
-});
+  router.route('/usuarios')
+    .get(authRequire, routes.getUsuarios)
+    .post(routes.postUsuarios);
+  router.route('/login')
+    .post(routes.login);
 
-app.get('/dashboard', function(req, res){
-    res.render('dashboard.jade');
-});
+mongoose.connect('mongodb://localhost/jwtAuth');
+app.listen(port);
+console.log('conectado a porta ' + port);
 
-app.get('/logout', function(req, res){
-    res.redirect('/');
-});
-
-app.listen(3000);
